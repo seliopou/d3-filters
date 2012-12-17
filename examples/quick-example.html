@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Quick Example | d3-filter</title>
+</head>
+<body>
+<script src="http://d3js.org/d3.v2.js"></script>
+<script src="../d3-filters.js"></script>
+<script type="text/javascript">
+  var svg  = d3.select('body').append('svg'),
+      defs = svg.append('defs');
+
+  svg.attr('width', 300)
+    .attr('height', 300);
+
+  defs.selectAll('rect')
+      .data(['yellow', 'cyan', 'magenta'])
+    .enter().append('rect')
+      .attr('fill', function(d) { return d; })
+      .attr('id', function(d) { return d; })
+      .attr('width', 100)
+      .attr('height', 100)
+      .attr('x', function(d) { return 1.5 * Math.floor(Math.random() * 100); })
+      .attr('y', function(d) { return 1.5 * Math.floor(Math.random() * 100); });
+
+  var merge = d3.filters.composite.arithmetic(0, 0.5, 0.5, 0)
+    .id('yellow')
+    .id('cyan')
+    .id('magenta');
+
+  defs.append('filter')
+    .attr('id', 'composite')
+    .attr('x', '0%')
+    .attr('y', '0%')
+    .call(merge);
+
+  svg.append('use')
+    .attr('filter', 'url(#composite)')
+    .attr('height', 200)
+    .attr('width', 200);
+</script>
+</body>
+</html>
