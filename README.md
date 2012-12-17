@@ -3,8 +3,9 @@ d3-filters
 
 *By Spiros Eliopoulos*
 
-d3-filters is a [D3][D3] plugin for working with SVG filter effects. It provides an algebraic and reusable JavaScript API
-for definining compositing operations in SVG. 
+d3-filters is a [D3][D3] plugin for working with SVG filter effects. It
+provides an algebraic and reusable JavaScript API for definining compositing
+operations in SVG. 
 
 [D3]: http://d3js.org
 
