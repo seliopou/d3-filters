@@ -3,12 +3,12 @@
 /* BEGIN PRIVATE APIs ======================================================= */
 
 /*
-* Lookup table for the `kind`s of supported inputs. Given a selection an the
-* value associated with the input, return a result that can be used as an
-* input for SVG Filter elements:
-*
-*   http://www.w3.org/TR/SVG11/filters.html#FilterPrimitiveInAttribute
-*/
+ * Lookup table for the `kind`s of supported inputs. Given a selection and the
+ * value associated with the input, return a result that can be used as an
+ * input for SVG Filter elements:
+ *
+ *   http://www.w3.org/TR/SVG11/filters.html#FilterPrimitiveInAttribute
+ */
 var kind = {};
 kind.id = function(v, result) {
   return kind.url('#' + v, result);
