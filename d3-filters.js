@@ -2,7 +2,7 @@
 
 /* BEGIN PRIVATE APIs ======================================================= */
 
-/* 
+/*
 * Lookup table for the `kind`s of supported inputs. Given a selection an the
 * value associated with the input, return a result that can be used as an
 * input for SVG Filter elements:
@@ -11,17 +11,20 @@
 */
 var kind = {};
 kind.id = function(v, result) {
-  return function(selection) {
-    return selection.append('feImage')
-      .attr('xlink:href', '#' + v)
-      .attr('result', result ? result : 'result_' + unique())
-      .attr('result');
-  }
+  return kind.url('#' + v, result);
 };
 kind.in = function(v) {
   /* Works for special results, e.g., SourceGraphic, BackgroundImage, etc. */
   return function(selection) {
     return v;
+  }
+};
+kind.url = function(v, result) {
+  return function(selection) {
+    return selection.append('feImage')
+      .attr('xlink:href', v)
+      .attr('result', result ? result : 'result_' + unique())
+      .attr('result');
   }
 };
 
@@ -58,41 +61,47 @@ var unique = (function() {
         spine  = _spine.call(null, Array.prototype.slice.call(arguments)); 
 
     function resultFor(d, r) {
-      return kind[d['kind']](d['value'], r);
+      return kind[d.kind](d.value, r);
     };
-    
+
     var my = function(selection) {
       if (inputs.length > 0) {
         var first = inputs[0],
             rest  = inputs.slice(1);
-  
+
         rest.reduce(function(acc, d, idx) {
           return spine(acc, resultFor(d), (rest.length - 1 == idx) && result)
         }, resultFor(first, (rest.length == 0) && result))(selection);
       }
-  
+
       return selection;
     };
-  
+
     /* Add an SVG element to the composite */
     my.id = function(ident) {
       inputs.push({ 'kind' : 'id', 'value' : ident });
       return  my;
     };
-  
+
+    /* Add an external resource to the composite */
+    my.url = function(url) {
+      inputs.push({ 'kind' : 'url', 'value' : url});
+      return my;
+    }
+
     /* Add the result of a filter to the composite */
     my.in = function(result) {
       inputs.push({ 'kind' : 'in', 'value' : result });
       return my;
     };
-  
+
     /* Get or set the result name of this composite */
     my.result = function(res) {
         if (arguments.length == 0) { return result; }
         result = res;
         return my;
     };
-  
+
     return my;
   };
 };
@@ -132,7 +141,7 @@ var blend = _chain(function(mode) {
     return function(selection) {
       var innv  = inn(selection),
           innv2 = inn2(selection);
-  
+
       return selection.append('feBlend')
         .attr('in', innv)
         .attr('in2', innv2)
@@ -211,7 +220,7 @@ d3.filters.merge = function() {
       merge.append('feMergeNode')
         .attr('in', inn);
     });
-    
+
     return selection;
   };
 
@@ -220,6 +229,12 @@ d3.filters.merge = function() {
     inputs.push({ 'kind' : 'id', 'value' : ident });
     return  my;
   };
+
+  /* Add an external resource to the composite */
+  my.url = function(url) {
+    inputs.push({ 'kind' : 'url', 'value' : url});
+    return my;
+  }
 
   /* Add the result of a filter to the composite */
   my.in = function(result) {
