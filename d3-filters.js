@@ -65,7 +65,7 @@ function resultFor(d, r) {
          * operation, if one is specified. The `string` results should be a
          * result that can be referenced by subsequent SVG filter operations.
          */
-        spine  = _spine.call(null, Array.prototype.slice.call(arguments)); 
+        spine  = _spine.apply(null, Array.prototype.slice.call(arguments)); 
 
     var my = function(selection) {
       if (inputs.length > 0) {
