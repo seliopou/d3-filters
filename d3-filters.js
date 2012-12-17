@@ -44,39 +44,24 @@ function resultFor(d, r) {
 };
 
 /*
- * This is a fold creator for composite operations. `_spine` is used as the
- * combining function in the fold, but the rest is handled by the function
- * returned by _chain.
+ * `_collect` returns a function of "The Resuable Charts" variety that collects
+ * and keeps track of certain user-provided data. The function passed to it
+ * should return a function that takes a d3 selection, a list of inputs (see
+ * `d3.kind` above) and an optional svg filter result. The function can do what
+ * it wants with that; its return value is ignored. The arguments to the result
+ * of collect will be passed to `_doer` as well. The type (roughly):
+ *
+ *   _collect :: (arguments -> ((selection, [input], string) -> any))
+ *            -> (arguments -> (selection -> selection))
  */
- function _chain(_spine) {
+function _collect(_doer) {
   return function() {
     var inputs = [],
         result = null,
-        /* The result of a call to `_spine` should be a function with
-         * the following type:
-         *
-         *   spine :: (selection -> string, selection -> string, bool)
-         *         -> (selection -> string)
-         * 
-         * ... where `selection` is a d3 selection and `a` is a type variable.
-         * The bool argument to `spine` indicates whether this is the final
-         * application of the combining function in the fold, the intended use
-         * of which is to assign a user-provided result to the composite
-         * operation, if one is specified. The `string` results should be a
-         * result that can be referenced by subsequent SVG filter operations.
-         */
-        spine  = _spine.apply(null, Array.prototype.slice.call(arguments)); 
+        doer   = _doer.apply(null, Array.prototype.slice.call(arguments));
 
     var my = function(selection) {
-      if (inputs.length > 0) {
-        var first = inputs[0],
-            rest  = inputs.slice(1);
-
-        rest.reduce(function(acc, d, idx) {
-          return spine(acc, resultFor(d), (rest.length - 1 == idx) && result)
-        }, resultFor(first, (rest.length == 0) && result))(selection);
-      }
-
+      doer(selection, inputs, result);
       return selection;
     };
 
@@ -107,6 +92,39 @@ function resultFor(d, r) {
 
     return my;
   };
+}
+
+/*
+ * This is a fold creator for composite operations. `_spine` is used as the
+ * combining function in the fold, but the rest is handled by the function
+ * returned by _chain. The type (roughly):
+ * 
+ *   _chain :: (arguments -> 
+ *               ((selection -> string, selection -> string, string or false) ->
+ *                 (selection -> string))
+ *          -> (arguments -> (selection -> selection))
+ *
+ * ... but it'd be really nice if a computer, a device that is good at 
+ * automating tasks for humans, could verify that for meAMIRITE?????? Guys,
+ * we're not gonna build Skynet with untyped code.
+ */ 
+function _chain(_spine) {
+  return _collect(function() {
+    var spine = _spine.apply(null, Array.prototype.slice.call(arguments)); 
+
+    return function(selection, inputs, result) {
+      if (inputs.length > 0) {
+        var first = inputs[0],
+            rest  = inputs.slice(1);
+
+        rest.reduce(function(acc, d, idx) {
+          return spine(acc, resultFor(d), (rest.length - 1 == idx) && result)
+        }, resultFor(first, (rest.length == 0) && result))(selection);
+      }
+
+      return selection;
+    };
+  });
 };
 
 var composite = _chain(function(op, k1, k2, k3, k4) {
@@ -207,11 +225,8 @@ d3.filters.blend.lighten = function() {
     return blend('lighten');
 }
 
-d3.filters.merge = function() {
-  var inputs = [],
-      result = null;
-
-  var my = function(selection) {
+d3.filters.merge = _collect(function() {
+  return function(selection, inputs, result) {
     var results = inputs.slice().reverse().map(function(d) {
       return resultFor(d)(selection);
     });
@@ -225,33 +240,6 @@ d3.filters.merge = function() {
 
     return selection;
   };
-
-  /* Add an SVG element to the composite */
-  my.id = function(ident) {
-    inputs.push({ 'kind' : 'id', 'value' : ident });
-    return  my;
-  };
-
-  /* Add an external resource to the composite */
-  my.url = function(url) {
-    inputs.push({ 'kind' : 'url', 'value' : url});
-    return my;
-  }
-
-  /* Add the result of a filter to the composite */
-  my.in = function(result) {
-    inputs.push({ 'kind' : 'in', 'value' : result });
-    return my;
-  };
-
-  /* Get or set the result name of this composite */
-  my.result = function(res) {
-      if (arguments.length == 0) { return result; }
-      result = res;
-      return my;
-  };
-
-  return my;
-};
+});
 
 })();
