@@ -1,4 +1,6 @@
 d3-filters
 ==========
 
-An better way to work with SVG filter effects in d3
+A [D3][D3] plugin for working with SVG Filter effects
+
+[D3]: http://d3js.org
