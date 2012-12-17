@@ -36,6 +36,10 @@ var unique = (function() {
   };
 })();
 
+function resultFor(d, r) {
+  return kind[d.kind](d.value, r);
+};
+
 /*
  * This is a fold creator for composite operations. `_spine` is used as the
  * combining function in the fold, but the rest is handled by the function
@@ -55,14 +59,10 @@ var unique = (function() {
          * The bool argument to `spine` indicates whether this is the final
          * application of the combining function in the fold, the intended use
          * of which is to assign a user-provided result to the composite
-         * operation, if one is specified. The `string` results should be
-         * results that can be referenced by subsequent SVG filter operations.
+         * operation, if one is specified. The `string` results should be a
+         * result that can be referenced by subsequent SVG filter operations.
          */
         spine  = _spine.call(null, Array.prototype.slice.call(arguments)); 
-
-    function resultFor(d, r) {
-      return kind[d.kind](d.value, r);
-    };
 
     var my = function(selection) {
       if (inputs.length > 0) {
@@ -210,7 +210,7 @@ d3.filters.merge = function() {
 
   var my = function(selection) {
     var results = inputs.slice().reverse().map(function(d) {
-      return kind[d['kind']](d['value'])(selection);
+      return resultFor(d)(selection);
     });
 
     var merge = selection.append('feMerge')
