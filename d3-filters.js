@@ -10,15 +10,18 @@
  *   http://www.w3.org/TR/SVG11/filters.html#FilterPrimitiveInAttribute
  */
 var kind = {};
+
 kind.id = function(v, result) {
   return kind.url('#' + v, result);
 };
+
 kind.in = function(v) {
   /* Works for special results, e.g., SourceGraphic, BackgroundImage, etc. */
   return function(selection) {
     return v;
   }
 };
+
 kind.url = function(v, result) {
   return function(selection) {
     return selection.append('feImage')
