@@ -213,13 +213,12 @@ d3.filters.merge = function() {
       return resultFor(d)(selection);
     });
 
-    var merge = selection.append('feMerge')
-      .attr('result', result);
-
-    results.forEach(function(inn) {
-      merge.append('feMergeNode')
-        .attr('in', inn);
-    });
+    selection.append('feMerge')
+        .attr('result', result)
+      .selectAll('nodes')
+        .data(results)
+      .enter().append('feMergeNode')
+        .attr('in', function(d) { return d; });
 
     return selection;
   };
